@@ -1,0 +1,28 @@
+# Benchmarks {#benchmarks}
+
+Here we consider the performance of `valr` with respect to other R packages.
+
+```{r}
+library(valr)
+library(bedr)
+library(IRanges)
+library(GenomicRanges)
+
+library(dplyr)
+library(microbenchmark)
+```
+
+```{r random_intervals}
+genome <- read_genome(system.file('extdata', 'hg19.chrom.sizes.gz', package = 'valr'))
+x <- bed_random(genome)
+y <- bed_random(genome)
+```
+
+## Intersection
+
+## Closest
+
+## Merge
+
+## Subtract
+

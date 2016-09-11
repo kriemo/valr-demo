@@ -1,0 +1,58 @@
+---
+title: "valr demonstrations"
+author: "Jay Hesselberth"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+twitter-handle: jayhesselberth
+# bibliography: [book.bib]
+biblio-style: apalike
+link-citations: yes
+github-repo: jayhesselberth/valr-demo
+description: "This is a collection of demostrations for the valr package."
+---
+
+# Introduction {#intro}
+
+`valr` provides tools to read and manipulate genome intervals and signals, similar to the standalone [`BEDtools`][1] suite. `valr` enables BEDtools-like analysis in the R/RStudio environment, and uses modern R tools for a terse, expressive syntax. Compute-intensive algorithms are implemented in [`Rcpp`][5]/C++, and many methods take advantage of the speed and grouping capability provided by [`dplyr`][3]. 
+
+We provide several introductions to `valr`:
+
+  - This comprehensive vignette that covers the core methods.
+  - A tutorial that demonstrates how to use `valr` in "real-world" applications.
+  - A `shiny` application that demonstrates interactive analysis of genome-scale data sets.
+
+```{r setup, message = FALSE}
+library(valr)
+library(dplyr)
+```
+
+## Installation
+
+`valr` can be installed from github, and will be eventually deposited in CRAN.
+
+```r
+devtools::install_github('jayhesselberth/valr')
+```
+
+## Contribute
+
+`valr` is actively maintained on [github][http://github.com/jayhesselberth/valr] and we welcome ideas for new tools and pull requests.
+
+## Comparison to other tools
+
+**Why another tool set for interval manipulations?** We already have [BEDtools][1], [bedops][8], [pybedtools][7], [GenomeRanges][9], [bedr][11] and [IRanges][12]. 
+
+We were motivated to develop a toolset that:
+
+  - Combines analysis and visualization in RStudio.
+  - Can be used to generate reports with Rmarkdown.
+  - Is highly extensible. New tools are quickly implemented on the R side.
+  - Leverages the "modern R" syntax, using `dplyr` and the pipe operator from `magrittr` (`%>%`).
+  - Maximizes speed by implementing compute-intensive algorithms in `Rcpp`.
+  - Facilitates interactive visulaizations with [`shiny`][10].
+
+We anticipate `valr` will mainly be used for analysis of pre-processed data in BED, bedGraph and VCF formats. Most users will have processed their aligned reads from BAM format to bedGraph, so we do not foresee supporting BAM directly. We would entertain requests for GTF / GFF support if there is interest, as `tidyr` makes it easy to convert these to BED12.
+
+Certain algorithms in `valr` were implemented in `Rcpp` (including [intersect, merge, subtract, closest][14]) to enable fluid interactive analysis. See the [benchmarks](#benchmarks) section for details.

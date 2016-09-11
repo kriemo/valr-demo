@@ -1,0 +1,11 @@
+book_filename: "valr-demo"
+chapter_name: "Chapter "
+
+rmd_files: [
+  "index.Rmd",
+  "functions.Rmd",
+  "demos.Rmd",
+  "benchmarks.Rmd"
+]
+
+before_chapter_script: "_common.R"
