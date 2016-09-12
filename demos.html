@@ -132,7 +132,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="demos.html"><a href="demos.html"><i class="fa fa-check"></i><b>3</b> Demonstrations</a><ul>
-<li class="chapter" data-level="3.1" data-path="demos.html"><a href="demos.html#dnase-i-example."><i class="fa fa-check"></i><b>3.1</b> DNase I Example.</a></li>
+<li class="chapter" data-level="3.1" data-path="demos.html"><a href="demos.html#bedtools-dnase-i"><i class="fa fa-check"></i><b>3.1</b> BEDtools DNase I</a></li>
 </ul></li>
 <li class="chapter" data-level="4" data-path="functions.html"><a href="functions.html#benchmarks"><i class="fa fa-check"></i><b>4</b> Benchmarks</a><ul>
 <li class="chapter" data-level="4.1" data-path="benchmarks.html"><a href="benchmarks.html"><i class="fa fa-check"></i><b>4.1</b> Intersection</a></li>
@@ -162,9 +162,100 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
             <section class="normal" id="section-">
 <div id="demos" class="section level1">
 <h1><span class="header-section-number">Chapter 3</span> Demonstrations</h1>
-<div id="dnase-i-example." class="section level2">
-<h2><span class="header-section-number">3.1</span> DNase I Example.</h2>
-<p>Here’s the DNase I example.</p>
+<div id="bedtools-dnase-i" class="section level2">
+<h2><span class="header-section-number">3.1</span> BEDtools DNase I</h2>
+<p><code>bed_jaccard</code> can also be used for the large-scale comparison of many datasets. As shown in the <a href="http://bedtools.readthedocs.org/en/latest/"><code>BEDtools</code></a> tutorial (<a href="http://quinlanlab.org/tutorials/bedtools/bedtools.html" class="uri">http://quinlanlab.org/tutorials/bedtools/bedtools.html</a>), we can measure the similarity of DNaseI hypersensitivity sites for 20 fetal tissue samples.</p>
+<p>This data was taken from Maurano et al. Systematic Localization of Common Disease-Associated Variation in Regulatory DNA. Science. 2012. Vol. 337 no. 6099 pp. 1190-1195. (www.sciencemag.org/content/337/6099/1190.short).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(gplots)
+<span class="co">#&gt; </span>
+<span class="co">#&gt; Attaching package: &#39;gplots&#39;</span>
+<span class="co">#&gt; The following object is masked from &#39;package:IRanges&#39;:</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     space</span>
+<span class="co">#&gt; The following object is masked from &#39;package:S4Vectors&#39;:</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     space</span>
+<span class="co">#&gt; The following object is masked from &#39;package:stats&#39;:</span>
+<span class="co">#&gt; </span>
+<span class="co">#&gt;     lowess</span>
+<span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(stringr)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(RColorBrewer)
+
+file_names &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="st">&#39;fBrain-DS14718.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fBrain-DS16302.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fHeart-DS15643.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fHeart-DS15839.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fHeart-DS16621.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fIntestine_Sm-DS16559.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fIntestine_Sm-DS16712.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fIntestine_Sm-DS16822.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fIntestine_Sm-DS17808.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fIntestine_Sm-DS18495.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fKidney_renal_cortex_L-DS17550.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fLung_L-DS17154.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fLung_L-DS18421.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fLung_R-DS15632.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fMuscle_arm-DS19053.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fMuscle_back-DS18454.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fMuscle_leg-DS19115.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fMuscle_leg-DS19158.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fSkin_fibro_bicep_R-DS19745.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>,
+  <span class="st">&#39;fStomach-DS17659.hg19.hotspot.twopass.fdr0.05.merge.bed.gz&#39;</span>)
+
+DNase_files &lt;-<span class="st"> </span><span class="kw">lapply</span>(file_names, function(x) {
+  <span class="kw">read_bed</span>(<span class="kw">paste0</span>(<span class="st">&#39;data/dnasei/&#39;</span>, x), <span class="dt">n_fields =</span> <span class="dv">4</span>)
+})</code></pre></div>
+<p>We can then use the following function to generate a 20x20 table containing a Jaccard statistic for each of the 400 pairwise tests.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">jaccard_func &lt;-<span class="st"> </span>function(list_in) {
+  
+  output &lt;-<span class="st"> </span><span class="kw">lapply</span>(list_in, function(x) {
+    
+    res &lt;-<span class="st"> </span><span class="kw">lapply</span>(list_in, function(y) {
+      jac &lt;-<span class="st"> </span><span class="kw">bed_jaccard</span>(x, y)
+      <span class="kw">select</span>(jac, jaccard)
+    })
+    
+    vec &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="kw">length</span>(res)
+    for (i in <span class="dv">1</span>:<span class="kw">length</span>(res)) vec[i] &lt;-<span class="st"> </span><span class="kw">unlist</span>(res[i])
+    vec
+  })
+
+  jac_table &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="dt">nrow =</span> <span class="kw">length</span>(output), <span class="dt">ncol =</span> <span class="kw">length</span>(output))
+
+  for (i in <span class="dv">1</span>:<span class="kw">length</span>(output)) jac_table[,i] &lt;-<span class="st"> </span><span class="kw">unlist</span>(output[i])
+
+  <span class="kw">data.frame</span>(jac_table)
+}
+
+jaccard_table &lt;-<span class="st"> </span><span class="kw">jaccard_func</span>(DNase_files)</code></pre></div>
+<p>This next part will simplify our original list of file names to generate labels for the table.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">col_names &lt;-<span class="st"> </span><span class="kw">lapply</span>(file_names, function(x) <span class="kw">str_split</span>(x, <span class="st">&#39;</span><span class="ch">\\</span><span class="st">.&#39;</span>, <span class="dv">2</span>)[[<span class="dv">1</span>]][[<span class="dv">1</span>]])
+<span class="kw">colnames</span>(jaccard_table) &lt;-<span class="st"> </span>col_names
+<span class="kw">rownames</span>(jaccard_table) &lt;-<span class="st"> </span>col_names</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">blues &lt;-<span class="st"> </span><span class="kw">colorRampPalette</span>(<span class="kw">c</span>(<span class="st">&#39;dark blue&#39;</span>, <span class="st">&#39;light blue&#39;</span>))
+reds &lt;-<span class="st"> </span><span class="kw">colorRampPalette</span>(<span class="kw">c</span>(<span class="st">&#39;pink&#39;</span>, <span class="st">&#39;dark red&#39;</span>))
+
+pca_labels &lt;-<span class="st"> </span><span class="kw">lapply</span>(file_names, function(x) <span class="kw">str_split</span>(x, <span class="st">&#39;_&#39;</span>, <span class="dv">2</span>)[[<span class="dv">1</span>]][[<span class="dv">1</span>]])
+pca_labels &lt;-<span class="st"> </span><span class="kw">lapply</span>(pca_labels, function(x) <span class="kw">str_split</span>(x, <span class="st">&#39;-&#39;</span>, <span class="dv">2</span>)[[<span class="dv">1</span>]][[<span class="dv">1</span>]]) 
+
+pca &lt;-<span class="st"> </span><span class="kw">princomp</span>(jaccard_table)
+
+plot_data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(pca$scores[,<span class="dv">1</span>], pca$scores[,<span class="dv">2</span>])
+<span class="kw">colnames</span>(plot_data) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;pca_scores_1&#39;</span>, <span class="st">&#39;pca_scores_2&#39;</span>)
+
+<span class="kw">ggplot</span>(plot_data, <span class="kw">aes</span>(pca_scores_1, pca_scores_2, <span class="dt">color =</span> <span class="kw">unlist</span>(pca_labels))) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="kw">blues</span>(<span class="dv">4</span>), <span class="kw">reds</span>(<span class="dv">4</span>)))</code></pre></div>
+<p><img src="valr-demo_files/figure-html/jaccard-PCA-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">heatmap.2</span>(<span class="kw">as.matrix</span>(jaccard_table), 
+          <span class="dt">col =</span> <span class="kw">brewer.pal</span>(<span class="dv">9</span>,<span class="st">&quot;Blues&quot;</span>), 
+          <span class="co">#margins = c(14, 14), </span>
+          <span class="dt">density.info =</span> <span class="st">&quot;none&quot;</span>, 
+          <span class="co">#lhei = c(2, 8), </span>
+          <span class="dt">trace =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
 
 </div>
 </div>
