@@ -9,6 +9,8 @@ Imports:
   ggplot2,
   microbenchmark,
   bedr,
+  gplots,
+  RColorBrewer,
   valr
 Remotes:
   rstudio/bookdown,
