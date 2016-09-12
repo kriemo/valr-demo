@@ -1,5 +1,5 @@
 Package: valr-demo
 Title: Does not matter.
 Version: 0.0.1
-Imports: bookdown, ggplot2, valr
+Imports: bookdown, ggplot2, microbenchmark, valr
 Remotes: rstudio/bookdown, jayhesselberth/valr
