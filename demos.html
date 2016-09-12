@@ -5,22 +5,22 @@
 
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>valr demonstrations</title>
+  <title>valr: Genome interval arithmetic in R</title>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <meta name="description" content="This is a collection of demostrations for the valr package.">
+  <meta name="description" content="This book documents usage and examples of the valr package for genome interval arithmetic.">
   <meta name="generator" content="bookdown 0.1.7 and GitBook 2.6.7">
 
-  <meta property="og:title" content="valr demonstrations" />
+  <meta property="og:title" content="valr: Genome interval arithmetic in R" />
   <meta property="og:type" content="book" />
   
   
-  <meta property="og:description" content="This is a collection of demostrations for the valr package." />
+  <meta property="og:description" content="This book documents usage and examples of the valr package for genome interval arithmetic." />
   <meta name="github-repo" content="jayhesselberth/valr-demo" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="valr demonstrations" />
+  <meta name="twitter:title" content="valr: Genome interval arithmetic in R" />
   <meta name="twitter:site" content="@jayhesselberth" />
-  <meta name="twitter:description" content="This is a collection of demostrations for the valr package." />
+  <meta name="twitter:description" content="This book documents usage and examples of the valr package for genome interval arithmetic." />
   
 
 <meta name="author" content="Jay Hesselberth">
@@ -106,13 +106,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       <nav role="navigation">
 
 <ul class="summary">
-<li><a href="./">valr demonstrations</a></li>
+<li><a href="./">Genome interval arithmetic in R</a></li>
 
 <li class="divider"></li>
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
-<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#installation"><i class="fa fa-check"></i><b>1.1</b> Installation</a></li>
-<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#contribute"><i class="fa fa-check"></i><b>1.2</b> Contribute</a></li>
-<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#comparison-to-other-tools"><i class="fa fa-check"></i><b>1.3</b> Comparison to other tools</a></li>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#install"><i class="fa fa-check"></i><b>1.1</b> Installation</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#tool-compare"><i class="fa fa-check"></i><b>1.2</b> Comparison to other tools</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#contribute"><i class="fa fa-check"></i><b>1.3</b> Contribute</a></li>
 </ul></li>
 <li class="chapter" data-level="2" data-path="functions.html"><a href="functions.html"><i class="fa fa-check"></i><b>2</b> Functions</a><ul>
 <li class="chapter" data-level="2.1" data-path="functions.html"><a href="functions.html#non-standard-evaluation"><i class="fa fa-check"></i><b>2.1</b> Non-standard evaluation</a></li>
@@ -152,7 +152,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">valr demonstrations</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">valr: Genome interval arithmetic in R</a>
           </h1>
         </div>
 
@@ -249,7 +249,12 @@ plot_data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(pca$s
 <span class="kw">ggplot</span>(plot_data, <span class="kw">aes</span>(pca_scores_1, pca_scores_2, <span class="dt">color =</span> <span class="kw">unlist</span>(pca_labels))) +
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="dv">3</span>) +
 <span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="kw">blues</span>(<span class="dv">4</span>), <span class="kw">reds</span>(<span class="dv">4</span>)))</code></pre></div>
-<p><img src="valr-demo_files/figure-html/jaccard-PCA-1.png" width="70%" style="display: block; margin: auto;" /></p>
+<div class="figure" style="text-align: center"><span id="fig:jaccard-PCA"></span>
+<img src="valr-demo_files/figure-html/jaccard-PCA-1.png" alt="PCA analysis of Jaccard scores" width="70%" />
+<p class="caption">
+Figure 3.1: PCA analysis of Jaccard scores
+</p>
+</div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">heatmap.2</span>(<span class="kw">as.matrix</span>(jaccard_table), 
           <span class="dt">col =</span> <span class="kw">brewer.pal</span>(<span class="dv">9</span>,<span class="st">&quot;Blues&quot;</span>), 
           <span class="co">#margins = c(14, 14), </span>

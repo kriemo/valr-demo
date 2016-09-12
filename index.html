@@ -5,22 +5,22 @@
 
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>valr demonstrations</title>
+  <title>valr: Genome interval arithmetic in R</title>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <meta name="description" content="This is a collection of demostrations for the valr package.">
+  <meta name="description" content="This book documents usage and examples of the valr package for genome interval arithmetic.">
   <meta name="generator" content="bookdown 0.1.7 and GitBook 2.6.7">
 
-  <meta property="og:title" content="valr demonstrations" />
+  <meta property="og:title" content="valr: Genome interval arithmetic in R" />
   <meta property="og:type" content="book" />
   
   
-  <meta property="og:description" content="This is a collection of demostrations for the valr package." />
+  <meta property="og:description" content="This book documents usage and examples of the valr package for genome interval arithmetic." />
   <meta name="github-repo" content="jayhesselberth/valr-demo" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="valr demonstrations" />
+  <meta name="twitter:title" content="valr: Genome interval arithmetic in R" />
   <meta name="twitter:site" content="@jayhesselberth" />
-  <meta name="twitter:description" content="This is a collection of demostrations for the valr package." />
+  <meta name="twitter:description" content="This book documents usage and examples of the valr package for genome interval arithmetic." />
   
 
 <meta name="author" content="Jay Hesselberth">
@@ -106,13 +106,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       <nav role="navigation">
 
 <ul class="summary">
-<li><a href="./">valr demonstrations</a></li>
+<li><a href="./">Genome interval arithmetic in R</a></li>
 
 <li class="divider"></li>
 <li class="chapter" data-level="1" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i><b>1</b> Introduction</a><ul>
-<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#installation"><i class="fa fa-check"></i><b>1.1</b> Installation</a></li>
-<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#contribute"><i class="fa fa-check"></i><b>1.2</b> Contribute</a></li>
-<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#comparison-to-other-tools"><i class="fa fa-check"></i><b>1.3</b> Comparison to other tools</a></li>
+<li class="chapter" data-level="1.1" data-path="index.html"><a href="index.html#install"><i class="fa fa-check"></i><b>1.1</b> Installation</a></li>
+<li class="chapter" data-level="1.2" data-path="index.html"><a href="index.html#tool-compare"><i class="fa fa-check"></i><b>1.2</b> Comparison to other tools</a></li>
+<li class="chapter" data-level="1.3" data-path="index.html"><a href="index.html#contribute"><i class="fa fa-check"></i><b>1.3</b> Contribute</a></li>
 </ul></li>
 <li class="chapter" data-level="2" data-path="functions.html"><a href="functions.html"><i class="fa fa-check"></i><b>2</b> Functions</a><ul>
 <li class="chapter" data-level="2.1" data-path="functions.html"><a href="functions.html#non-standard-evaluation"><i class="fa fa-check"></i><b>2.1</b> Non-standard evaluation</a></li>
@@ -152,7 +152,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
       <div class="body-inner">
         <div class="book-header" role="navigation">
           <h1>
-            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">valr demonstrations</a>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">valr: Genome interval arithmetic in R</a>
           </h1>
         </div>
 
@@ -161,7 +161,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
             <section class="normal" id="section-">
 <div id="header">
-<h1 class="title">valr demonstrations</h1>
+<h1 class="title">valr: Genome interval arithmetic in R</h1>
 <h4 class="author"><em>Jay Hesselberth</em></h4>
 <h4 class="date"><em>2016-09-12</em></h4>
 </div>
@@ -176,17 +176,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(valr)
 <span class="kw">library</span>(dplyr)</code></pre></div>
-<div id="installation" class="section level2">
+<div id="install" class="section level2">
 <h2><span class="header-section-number">1.1</span> Installation</h2>
 <p><code>valr</code> can be installed from github, and will be eventually deposited in CRAN.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&#39;jayhesselberth/valr&#39;</span>)</code></pre></div>
 </div>
-<div id="contribute" class="section level2">
-<h2><span class="header-section-number">1.2</span> Contribute</h2>
-<p><code>valr</code> is actively maintained on [github][<a href="http://github.com/jayhesselberth/valr" class="uri">http://github.com/jayhesselberth/valr</a>] and we welcome ideas for new tools and pull requests.</p>
-</div>
-<div id="comparison-to-other-tools" class="section level2">
-<h2><span class="header-section-number">1.3</span> Comparison to other tools</h2>
+<div id="tool-compare" class="section level2">
+<h2><span class="header-section-number">1.2</span> Comparison to other tools</h2>
 <p><strong>Why another tool set for interval manipulations?</strong> We already have <a href="http://bedtools.readthedocs.org/en/latest/">BEDtools</a>, <a href="http://bedops.readthedocs.org/en/latest/index.html">bedops</a>, <a href="https://pythonhosted.org/pybedtools/">pybedtools</a>, <a href="https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html">GenomeRanges</a>, <a href="https://cran.r-project.org/web/packages/bedr/index.html">bedr</a> and <a href="https://bioconductor.org/packages/release/bioc/html/IRanges.html">IRanges</a>.</p>
 <p>We were motivated to develop a toolset that:</p>
 <ul>
@@ -199,6 +195,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul>
 <p>We anticipate <code>valr</code> will mainly be used for analysis of pre-processed data in BED, bedGraph and VCF formats. Most users will have processed their aligned reads from BAM format to bedGraph, so we do not foresee supporting BAM directly. We would entertain requests for GTF / GFF support if there is interest, as <code>tidyr</code> makes it easy to convert these to BED12.</p>
 <p>Certain algorithms in <code>valr</code> were implemented in <code>Rcpp</code> (including <a href="https://github.com/jayhesselberth/valr/tree/master/src">intersect, merge, subtract, closest</a>) to enable fluid interactive analysis. See the <a href="functions.html#benchmarks">benchmarks</a> section for details.</p>
+</div>
+<div id="contribute" class="section level2">
+<h2><span class="header-section-number">1.3</span> Contribute</h2>
+<p><code>valr</code> is actively maintained on [github][<a href="http://github.com/jayhesselberth/valr" class="uri">http://github.com/jayhesselberth/valr</a>] and we welcome ideas for new tools and pull requests.</p>
 
 </div>
 </div>
