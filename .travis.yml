@@ -1,5 +1,12 @@
 language: r
 
+# required for bedr
+before_install:
+  - brew update
+  - brew install homebrew/science/bedops
+  - brew install homebrew/science/bedtools
+  - brew install homebrew/science/tabix
+
 before_script:
   - chmod +x ./_build.sh
   - chmod +x ./_deploy.sh
