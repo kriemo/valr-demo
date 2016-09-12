@@ -12,7 +12,8 @@ sudo: false
 
 os: osx
 compiler: clang
-    
+bioc_packages: IRanges, GenomicRanges
+
 cache:
   packages: yes
   directories:

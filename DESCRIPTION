@@ -10,8 +10,6 @@ Imports:
   microbenchmark,
   bedr,
   valr
-Suggests:
-  BiocInstaller
 Remotes:
   rstudio/bookdown,
   jayhesselberth/valr
