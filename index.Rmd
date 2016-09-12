@@ -1,5 +1,5 @@
 ---
-title: "valr demonstrations"
+title: "valr: Genome interval arithmetic in R"
 author: "Jay Hesselberth"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
@@ -10,7 +10,7 @@ twitter-handle: jayhesselberth
 biblio-style: apalike
 link-citations: yes
 github-repo: jayhesselberth/valr-demo
-description: "This is a collection of demostrations for the valr package."
+description: "This book documents usage and examples of the valr package for genome interval arithmetic."
 ---
 
 # Introduction {#intro}
@@ -28,7 +28,7 @@ library(valr)
 library(dplyr)
 ```
 
-## Installation
+## Installation {#install}
 
 `valr` can be installed from github, and will be eventually deposited in CRAN.
 
@@ -36,11 +36,7 @@ library(dplyr)
 devtools::install_github('jayhesselberth/valr')
 ```
 
-## Contribute
-
-`valr` is actively maintained on [github][http://github.com/jayhesselberth/valr] and we welcome ideas for new tools and pull requests.
-
-## Comparison to other tools
+## Comparison to other tools {#tool-compare}
 
 **Why another tool set for interval manipulations?** We already have [BEDtools][1], [bedops][8], [pybedtools][7], [GenomeRanges][9], [bedr][11] and [IRanges][12]. 
 
@@ -56,3 +52,8 @@ We were motivated to develop a toolset that:
 We anticipate `valr` will mainly be used for analysis of pre-processed data in BED, bedGraph and VCF formats. Most users will have processed their aligned reads from BAM format to bedGraph, so we do not foresee supporting BAM directly. We would entertain requests for GTF / GFF support if there is interest, as `tidyr` makes it easy to convert these to BED12.
 
 Certain algorithms in `valr` were implemented in `Rcpp` (including [intersect, merge, subtract, closest][14]) to enable fluid interactive analysis. See the [benchmarks](#benchmarks) section for details.
+
+## Contribute {#contribute}
+
+`valr` is actively maintained on [github][http://github.com/jayhesselberth/valr] and we welcome ideas for new tools and pull requests.
+

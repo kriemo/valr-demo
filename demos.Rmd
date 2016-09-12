@@ -75,7 +75,7 @@ colnames(jaccard_table) <- col_names
 rownames(jaccard_table) <- col_names
 ```
 
-```{r jaccard-PCA}
+```{r jaccard-PCA, fig.cap='PCA analysis of Jaccard scores'}
 blues <- colorRampPalette(c('dark blue', 'light blue'))
 reds <- colorRampPalette(c('pink', 'dark red'))
 
@@ -92,7 +92,7 @@ ggplot(plot_data, aes(pca_scores_1, pca_scores_2, color = unlist(pca_labels))) +
   scale_color_manual(values = c(blues(4), reds(4)))
 ```
 
-```{r jaccard-heatmap, eval=FALSE}
+```{r jaccard-heatmap, eval = FALSE, fig.width=1, fig.height=1, fig.cap='Heatmap of Jaccard scores'}
 heatmap.2(as.matrix(jaccard_table), 
           col = brewer.pal(9,"Blues"), 
           #margins = c(14, 14), 
