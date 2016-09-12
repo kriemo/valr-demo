@@ -10,6 +10,9 @@ script:
 
 sudo: false
 
+os: osx
+compiler: clang
+    
 cache:
   packages: yes
   directories:
