@@ -22,6 +22,7 @@ compiler: clang
 bioc_packages:
   - IRanges
   - GenomicRanges
+  - ComplexHeatmap
 
 cache:
   packages: yes

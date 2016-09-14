@@ -1,102 +1,104 @@
 # Demonstrations {#demos}
 
-## BEDtools DNase I
+## Histone density and transcription start sites
 
-`bed_jaccard` can also be used for the large-scale comparison of many datasets. As shown in the [`BEDtools`][1] tutorial (http://quinlanlab.org/tutorials/bedtools/bedtools.html), we can measure the similarity of DNaseI hypersensitivity sites for 20 fetal tissue samples. 
+```{r tss_signal_example, warning = FALSE, message = FALSE, fig.align='center'}
+library(valr)
+library(dplyr)
+library(ggplot2)
+
+bedfile <- system.file('extdata', 'genes.hg19.chr22.bed.gz', package = 'valr')
+bgfile  <- system.file('extdata', 'hela.h3k4.chip.bg.gz', package = 'valr')
+genomefile <- system.file('extdata', 'hg19.chrom.sizes.gz', package = 'valr')
+
+genes <- read_bed(bedfile, n_fields = 6)
+genome <- read_genome(genomefile)
+
+tss <- genes %>% filter(strand == '+') %>% mutate(end = start + 1)
+
+region_size <- 1000
+win_size <- 50
+
+x <- tss %>%
+  bed_slop(genome, both = region_size) %>%
+  bed_makewindows(genome, win_size) %>%
+  group_by(win_id)
+
+y <- read_bedgraph(bgfile)
+
+res <- bed_map(x, y, sums = sum(value.y)) %>%
+  summarize(means = mean(sums), sds = sd(sums))
+
+x_labels <- seq(-region_size, region_size, by = win_size * 5)
+x_breaks <- seq(1, 41, by = 5)
+sd_limits <- aes(ymax = means + sds, ymin = means - sds)
+
+ggplot(res, aes(x = win_id.x, y = means)) +
+  geom_point() + geom_pointrange(sd_limits) + 
+  scale_x_continuous(labels = x_labels, breaks = x_breaks) + 
+  ggtitle('H3K4me3 ChIP signal near TSSs') +
+  xlab('Position\n(bp from TSS)') + ylab('Signal') +
+  theme_bw()
+```
+
+## Correlations among DNase I hypersensitive sites
+
+Here we use `bed_jaccard` for a large-scale comparison of related datasets. As shown in the [`BEDtools`][1] tutorial (http://quinlanlab.org/tutorials/bedtools/bedtools.html), we can measure the similarity of DNaseI hypersensitivity sites for 20 fetal tissue samples. 
 
 This data was taken from Maurano et al. Systematic Localization of Common Disease-Associated Variation in Regulatory DNA. Science. 2012. Vol. 337 no. 6099 pp. 1190-1195. (www.sciencemag.org/content/337/6099/1190.short).
 
-```{r jaccard files}
-library(gplots)
+```{r init, warning = FALSE, message = FALSE}
+library(valr)
 library(dplyr)
+library(tidyr)
+library(purrr)
+library(broom)
 library(stringr)
 library(ggplot2)
-library(RColorBrewer)
-
-file_names <- list(
-  'fBrain-DS14718.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fBrain-DS16302.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fHeart-DS15643.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fHeart-DS15839.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fHeart-DS16621.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fIntestine_Sm-DS16559.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fIntestine_Sm-DS16712.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fIntestine_Sm-DS16822.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fIntestine_Sm-DS17808.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fIntestine_Sm-DS18495.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fKidney_renal_cortex_L-DS17550.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fLung_L-DS17154.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fLung_L-DS18421.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fLung_R-DS15632.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fMuscle_arm-DS19053.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fMuscle_back-DS18454.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fMuscle_leg-DS19115.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fMuscle_leg-DS19158.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fSkin_fibro_bicep_R-DS19745.hg19.hotspot.twopass.fdr0.05.merge.bed.gz',
-  'fStomach-DS17659.hg19.hotspot.twopass.fdr0.05.merge.bed.gz')
-
-DNase_files <- lapply(file_names, function(x) {
-  read_bed(paste0('data/dnasei/', x), n_fields = 4)
-})
+library(ggrepel)
+library(ComplexHeatmap)
 ```
 
-We can then use the following function to generate a 20x20 table containing a Jaccard statistic for each of the 400 pairwise tests.
-
-```{r jaccard function}
-jaccard_func <- function(list_in) {
-  
-  output <- lapply(list_in, function(x) {
-    
-    res <- lapply(list_in, function(y) {
-      jac <- bed_jaccard(x, y)
-      select(jac, jaccard)
-    })
-    
-    vec <- 1:length(res)
-    for (i in 1:length(res)) vec[i] <- unlist(res[i])
-    vec
-  })
-
-  jac_table <- matrix(nrow = length(output), ncol = length(output))
-
-  for (i in 1:length(output)) jac_table[,i] <- unlist(output[i])
-
-  data.frame(jac_table)
-}
-
-jaccard_table <- jaccard_func(DNase_files)
+```{r read_files}
+dnase_files <- list.files('data/dnasei', pattern = 'merge.bed.gz', full.names = TRUE)
+data <- dnase_files %>% map(read_bed, n_fields = 4)
 ```
 
-This next part will simplify our original list of file names to generate labels for the table.
+Then generate a 20x20 table containing a Jaccard statistic for each of the 400 pairwise comparisons.
+
+```{r jaccard-mat}
+res <- data %>%
+  cross2(.,.) %>%
+  map(lift(bed_jaccard)) %>% 
+  map("jaccard") %>%
+  flatten_dbl() %>%
+  matrix(nrow = 20, ncol = 20)
+```
+
+Simplify our original list of file names to generate labels for the table.
 
 ```{r jaccard-names}
-col_names <- lapply(file_names, function(x) str_split(x, '\\.', 2)[[1]][[1]])
-colnames(jaccard_table) <- col_names
-rownames(jaccard_table) <- col_names
+col_names <- dnase_files %>%
+  str_split('/') %>% map(`[[`, 3) %>%
+  str_split('\\.') %>% map(`[[`, 1) %>%
+  flatten_chr()
+
+colnames(res) <- col_names
+rownames(res) <- col_names
 ```
 
 ```{r jaccard-PCA, fig.cap='PCA analysis of Jaccard scores'}
-blues <- colorRampPalette(c('dark blue', 'light blue'))
-reds <- colorRampPalette(c('pink', 'dark red'))
+pca <- broom::tidy(prcomp(res)) %>% as_data_frame()
 
-pca_labels <- lapply(file_names, function(x) str_split(x, '_', 2)[[1]][[1]])
-pca_labels <- lapply(pca_labels, function(x) str_split(x, '-', 2)[[1]][[1]]) 
+pca_comps <- filter(pca, PC <= 2) %>%
+  tidyr::spread(PC, value) %>%
+  setNames(c('label','PC1','PC2'))
 
-pca <- princomp(jaccard_table)
-
-plot_data <- data.frame(pca$scores[,1], pca$scores[,2])
-colnames(plot_data) <- c('pca_scores_1', 'pca_scores_2')
-
-ggplot(plot_data, aes(pca_scores_1, pca_scores_2, color = unlist(pca_labels))) +
-  geom_point(size = 3) +
-  scale_color_manual(values = c(blues(4), reds(4)))
+ggplot(pca_comps, aes(PC1, PC2)) +
+  geom_point(size = 3, color = 'red') +
+  geom_text_repel(aes(label = label))
 ```
 
-```{r jaccard-heatmap, eval = FALSE, fig.width=1, fig.height=1, fig.cap='Heatmap of Jaccard scores'}
-heatmap.2(as.matrix(jaccard_table), 
-          col = brewer.pal(9,"Blues"), 
-          #margins = c(14, 14), 
-          density.info = "none", 
-          #lhei = c(2, 8), 
-          trace = "none")
+```{r jaccard-heatmap, fig.cap='Heatmap of Jaccard scores'}
+Heatmap(res, color = 'Blues')
 ```

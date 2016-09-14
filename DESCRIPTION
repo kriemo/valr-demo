@@ -3,15 +3,18 @@ Title: Does not matter.
 Version: 0.0.1
 biocViews:
   IRanges,
-  GenomicRanges
+  GenomicRanges,
+  ComplexHeatmap
 Imports:
+  valr,
   bookdown,
   ggplot2,
+  ggrepel,
   microbenchmark,
   bedr,
-  gplots,
   RColorBrewer,
-  valr
+  purrr,
+  dplyr
 Remotes:
   rstudio/bookdown,
   jayhesselberth/valr
