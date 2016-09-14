@@ -11,16 +11,20 @@ biblio-style: apalike
 link-citations: yes
 github-repo: jayhesselberth/valr-demo
 description: "This book documents usage and examples of the valr package for genome interval arithmetic."
+cover-image: images/valr-hex.png
 ---
 
 # Introduction {#intro}
+
+```{r fig.align='center', echo=FALSE, include=identical(knitr:::pandoc_to(), 'html'), out.width='30%'}
+knitr::include_graphics('images/valr-hex.png') 
+```
 
 `valr` provides tools to read and manipulate genome intervals and signals, similar to the standalone [`BEDtools`][1] suite. `valr` enables BEDtools-like analysis in the R/RStudio environment, and uses modern R tools for a terse, expressive syntax. Compute-intensive algorithms are implemented in [`Rcpp`][5]/C++, and many methods take advantage of the speed and grouping capability provided by [`dplyr`][3]. 
 
 We provide several introductions to `valr`:
 
   - This comprehensive vignette that covers the core methods.
-  - A tutorial that demonstrates how to use `valr` in "real-world" applications.
   - A `shiny` application that demonstrates interactive analysis of genome-scale data sets.
 
 ```{r setup, message = FALSE}
@@ -55,5 +59,5 @@ Certain algorithms in `valr` were implemented in `Rcpp` (including [intersect, m
 
 ## Contribute {#contribute}
 
-`valr` is actively maintained on [github][http://github.com/jayhesselberth/valr] and we welcome ideas for new tools and pull requests.
+`valr` is actively maintained on [github](http://github.com/jayhesselberth/valr) and we welcome ideas for new tools and pull requests.
 
