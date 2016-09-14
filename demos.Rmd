@@ -1,8 +1,26 @@
 # Demonstrations {#demos}
 
-## Histone density and transcription start sites
+## Creating intron intervals {#demo-intron}
 
-```{r tss_signal_example, warning = FALSE, message = FALSE, fig.align='center'}
+Intron intervals can be identified by calculating:
+
+1. Intervals that are covered by any gene annotation
+1. Then, intervals that are not covered by exons.
+
+```{r demo-intron}
+# genome <- system.file('extdata', 'hg19.chrom.sizes.gz', package = 'valr')
+# 
+# exons <-
+#   
+# introns <- 
+# introns
+```
+
+## Histone density and transcription start sites {#demo-tss}
+
+This demonstration combines several `valr` functions to analyze the distribution of histone marks near transcription start sites.
+
+```{r demo-tss, warning = FALSE, message = FALSE, fig.align='center', fig.cap='human H3K4me3 signal near transcription starts sites'}
 library(valr)
 library(dplyr)
 library(ggplot2)
@@ -14,7 +32,10 @@ genomefile <- system.file('extdata', 'hg19.chrom.sizes.gz', package = 'valr')
 genes <- read_bed(bedfile, n_fields = 6)
 genome <- read_genome(genomefile)
 
-tss <- genes %>% filter(strand == '+') %>% mutate(end = start + 1)
+# generate 1 bp intervals, + strand only for now
+tss <- genes %>%
+  filter(strand == '+') %>%
+  mutate(end = start + 1)
 
 region_size <- 1000
 win_size <- 50
@@ -41,11 +62,11 @@ ggplot(res, aes(x = win_id.x, y = means)) +
   theme_bw()
 ```
 
-## Correlations among DNase I hypersensitive sites
+## Correlations among DNase I hypersensitive sites {#demo-dnase}
 
-Here we use `bed_jaccard` for a large-scale comparison of related datasets. As shown in the [`BEDtools`][1] tutorial (http://quinlanlab.org/tutorials/bedtools/bedtools.html), we can measure the similarity of DNaseI hypersensitivity sites for 20 fetal tissue samples. 
+Here we use `bed_jaccard` for a large-scale comparison of related datasets. As shown in the [`BEDtools` tutorial](http://quinlanlab.org/tutorials/bedtools/bedtools.html), we can measure the similarity of DNaseI hypersensitivity sites for 20 fetal tissue samples. 
 
-This data was taken from Maurano et al. Systematic Localization of Common Disease-Associated Variation in Regulatory DNA. Science. 2012. Vol. 337 no. 6099 pp. 1190-1195. (www.sciencemag.org/content/337/6099/1190.short).
+This data was taken from [Maurano *et al.* Systematic Localization of Common Disease-Associated Variation in Regulatory DNA. (2012) *Science*](www.sciencemag.org/content/337/6099/1190.short).
 
 ```{r init, warning = FALSE, message = FALSE}
 library(valr)
@@ -59,8 +80,10 @@ library(ggrepel)
 library(ComplexHeatmap)
 ```
 
+First read all 20 BED files containing DNase I hypersensitivity sites from 20 fetal tissues.
+
 ```{r read_files}
-dnase_files <- list.files('data/dnasei', pattern = 'merge.bed.gz', full.names = TRUE)
+dnase_files <- list.files('data/dnasei',pattern = 'merge.bed.gz', full.names = TRUE)
 data <- dnase_files %>% map(read_bed, n_fields = 4)
 ```
 
@@ -75,19 +98,31 @@ res <- data %>%
   matrix(nrow = 20, ncol = 20)
 ```
 
-Simplify our original list of file names to generate labels for the table.
+We also need to generate labels for the table from the file names.
 
 ```{r jaccard-names}
+# names are tissue + sample_num
 col_names <- dnase_files %>%
   str_split('/') %>% map(`[[`, 3) %>%
   str_split('\\.') %>% map(`[[`, 1) %>%
-  flatten_chr()
+  str_split('-') %>% map(`[[`, 1) %>%
+  flatten_chr() %>%
+  str_replace('^f', '') %>%
+  str_c(str_c('-', seq(length(.))))
 
 colnames(res) <- col_names
 rownames(res) <- col_names
 ```
 
-```{r jaccard-PCA, fig.cap='PCA analysis of Jaccard scores'}
+Now the Jaccard coefficients can be visualized in heatmap form.
+
+```{r jaccard-heatmap, fig.cap='Heatmap of Jaccard scores', fig.align='center', fig.width=8}
+Heatmap(res, color_space = 'Blues')
+```
+
+Finally we can do some PCA analysis on the Jaccard coefficients to identify clusters of related cell types.
+
+```{r jaccard-PCA, fig.cap='PCA analysis of Jaccard scores', fig.align='center', fig.width=8}
 pca <- broom::tidy(prcomp(res)) %>% as_data_frame()
 
 pca_comps <- filter(pca, PC <= 2) %>%
@@ -97,8 +132,4 @@ pca_comps <- filter(pca, PC <= 2) %>%
 ggplot(pca_comps, aes(PC1, PC2)) +
   geom_point(size = 3, color = 'red') +
   geom_text_repel(aes(label = label))
-```
-
-```{r jaccard-heatmap, fig.cap='Heatmap of Jaccard scores'}
-Heatmap(res, color = 'Blues')
 ```

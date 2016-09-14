@@ -381,6 +381,25 @@ bed_jaccard(x, y)
 
 ## Other topics
 
+### Generating sub-intervals
+
+The `bed_makewindows()` function generates sub-intervals from a list of intervals. This approach is useful for aggregating signals around genomic features in small windows, which can reveal subtle patterns that would be masked by aggregating on entire intervals. This is illustrated by examining the density of [histone marks surrounding transcription start sites][#demo-tss].
+
+```{r bed_makewindows}
+x <- read_bed(system.file('extdata', '3fields.bed.gz', package = 'valr'))
+bed_makewindows(x, win_size = 10, genome)
+```
+
+### Coverting interval formats
+
+The `bed12_to_exons()` function extracts individual exons from a BED12 file.
+
+```{r bed12_to_exons}
+bed12_path <- system.file('extdata', 'mm9.bed12.gz', package = 'valr')
+x <- read_bed12(bed12_path)
+bed12_to_exons(x) 
+```
+
 ### Grouping related intervals
 
 The `group_by` operation from `dplyr` serves a similar purpose to BEDtools `groupby`, and can be combined with `dplyr::summarize` to calculate summary statistics from groups.
