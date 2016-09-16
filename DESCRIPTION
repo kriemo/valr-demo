@@ -16,7 +16,7 @@ Imports:
   RColorBrewer,
   purrr,
   dplyr,
-  runstest
+  randtests
 Remotes:
   rstudio/bookdown,
   jayhesselberth/valr
