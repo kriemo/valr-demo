@@ -2,10 +2,10 @@ book_filename: "valr-demo"
 chapter_name: "Section "
 
 rmd_files: [
-  "index.Rmd",
-  "functions.Rmd",
-  "demos.Rmd",
-  "benchmarks.Rmd"
+  "00-index.Rmd",
+  "01-functions.Rmd",
+  "02-demos.Rmd",
+  "03-benchmarks.Rmd"
 ]
 
 before_chapter_script: "_common.R"
