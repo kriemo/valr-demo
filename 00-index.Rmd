@@ -20,17 +20,12 @@ cover-image: images/valr-hex.png
 knitr::include_graphics('images/valr-hex.png') 
 ```
 
-`valr` provides tools to read and manipulate genome intervals and signals, similar to the standalone [`BEDtools`][1] suite. `valr` enables BEDtools-like analysis in the R/RStudio environment, and uses modern R tools for a terse, expressive syntax. Compute-intensive algorithms are implemented in [`Rcpp`][5]/C++, and many methods take advantage of the speed and grouping capability provided by [`dplyr`][3]. 
+`valr` provides tools to read and manipulate genome intervals and signals, similar to the standalone [`BEDtools`][1] suite. `valr` enables BEDtools-like analysis in the R/RStudio environment, and uses modern R tools for a terse, expressive syntax. We created `valr` from a desire to teach students to analyze genomic data using powerful concepts of interval arithmetic, but without the cumbersome back-and-forth between command-line analysis and exploratory analysis tools. Many `valr` functions leverage the speed and grouping capability provided by [`dplyr`][3], and compute-intensive algorithms are implemented in [`Rcpp`][5]/C++ to maximize speed.
 
 We provide several introductions to `valr`:
 
   - This comprehensive vignette that covers the core methods.
   - A `shiny` application that demonstrates interactive analysis of genome-scale data sets.
-
-```{r setup, message = FALSE}
-library(valr)
-library(dplyr)
-```
 
 ## Installation {#install}
 
@@ -47,17 +42,20 @@ devtools::install_github('jayhesselberth/valr')
 We were motivated to develop a toolset that:
 
   - Combines analysis and visualization in RStudio.
-  - Can be used to generate reports with Rmarkdown.
+  - Can be used to generate *reproducible* reports with RMarkdown.
   - Is highly extensible. New tools are quickly implemented on the R side.
   - Leverages the "modern R" syntax, using `dplyr` and the pipe operator from `magrittr` (`%>%`).
   - Maximizes speed by implementing compute-intensive algorithms in `Rcpp`.
   - Facilitates interactive visulaizations with [`shiny`][10].
 
-We anticipate `valr` will mainly be used for analysis of pre-processed data in BED, bedGraph and VCF formats. Most users will have processed their aligned reads from BAM format to bedGraph, so we do not foresee supporting BAM directly. We would entertain requests for GTF / GFF support if there is interest, as `tidyr` makes it easy to convert these to BED12.
+`valr` currently supports data in BED, bedGraph and VCF formats. We anticipate also supporting BAM and VCF formats in a robust way as needs arise.
 
 Certain algorithms in `valr` were implemented in `Rcpp` (including [intersect, merge, subtract, closest][14]) to enable fluid interactive analysis. See the [benchmarks](#benchmarks) section for details.
 
+## Acknowledgments
+
+`valr` began as a project in a [genomics workshop class](http://molb7621.github.io) but has become a mature software package. Key contributions have been made by Kent Riemondy, Ryan Sheridan and Ryan Mackie.
+
 ## Contribute {#contribute}
 
-`valr` is actively maintained on [github](http://github.com/jayhesselberth/valr) and we welcome ideas for new tools and pull requests.
-
+`valr` is actively maintained on [github](http://github.com/jayhesselberth/valr) and we welcome questions about the package and ideas for new tools.

@@ -1,0 +1,285 @@
+# Demonstrations {#demos}
+
+## Creating intron intervals {#demo-intron}
+
+Intron intervals can be identified by calculating:
+
+1. Intervals that are covered by any gene annotation
+1. Then, intervals that are not covered by exons.
+
+```{r demo-intron}
+# genome <- system.file('extdata', 'hg19.chrom.sizes.gz', package = 'valr')
+# 
+# exons <-
+#   
+# introns <- 
+# introns
+```
+
+## Histone density and transcription start sites {#demo-tss}
+
+This demonstration combines several `valr` functions to analyze the distribution of histone marks near transcription start sites.
+
+```{r demo-tss, warning = FALSE, message = FALSE, fig.align='center', fig.cap='human H3K4me3 signal near transcription starts sites'}
+library(valr)
+library(dplyr)
+library(ggplot2)
+
+bedfile <- system.file('extdata', 'genes.hg19.chr22.bed.gz', package = 'valr')
+bgfile  <- system.file('extdata', 'hela.h3k4.chip.bg.gz', package = 'valr')
+genomefile <- system.file('extdata', 'hg19.chrom.sizes.gz', package = 'valr')
+
+genes <- read_bed(bedfile, n_fields = 6)
+genome <- read_genome(genomefile)
+
+# generate 1 bp intervals, + strand only for now
+tss <- genes %>%
+  filter(strand == '+') %>%
+  mutate(end = start + 1)
+
+region_size <- 1000
+win_size <- 50
+
+x <- tss %>%
+  bed_slop(genome, both = region_size) %>%
+  bed_makewindows(genome, win_size) %>%
+  group_by(win_id)
+
+y <- read_bedgraph(bgfile)
+
+res <- bed_map(x, y, sums = sum(value.y)) %>%
+  summarize(means = mean(sums), sds = sd(sums))
+
+x_labels <- seq(-region_size, region_size, by = win_size * 5)
+x_breaks <- seq(1, 41, by = 5)
+sd_limits <- aes(ymax = means + sds, ymin = means - sds)
+
+ggplot(res, aes(x = win_id.x, y = means)) +
+  geom_point() + geom_pointrange(sd_limits) + 
+  scale_x_continuous(labels = x_labels, breaks = x_breaks) + 
+  ggtitle('H3K4me3 ChIP signal near TSSs') +
+  xlab('Position\n(bp from TSS)') + ylab('Signal') +
+  theme_bw()
+```
+
+## Correlations among DNase I hypersensitive sites {#demo-dnase}
+
+Here we use `bed_jaccard` for a large-scale comparison of related datasets. As shown in the [`BEDtools` tutorial](http://quinlanlab.org/tutorials/bedtools/bedtools.html), we can measure the similarity of DNaseI hypersensitivity sites for 20 fetal tissue samples. 
+
+This data was taken from [Maurano *et al.* Systematic Localization of Common Disease-Associated Variation in Regulatory DNA. (2012) *Science*](www.sciencemag.org/content/337/6099/1190.short).
+
+```{r init, warning = FALSE, message = FALSE}
+library(valr)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(broom)
+library(stringr)
+library(ggplot2)
+library(ggrepel)
+library(ComplexHeatmap)
+```
+
+First read all 20 BED files containing DNase I hypersensitivity sites from 20 fetal tissues.
+
+```{r read_files}
+dnase_files <- list.files('data/dnasei',pattern = 'merge.bed.gz', full.names = TRUE)
+data <- dnase_files %>% map(read_bed, n_fields = 4)
+```
+
+Then generate a 20x20 table containing a Jaccard statistic for each of the 400 pairwise comparisons.
+
+```{r jaccard-mat}
+res <- data %>%
+  cross2(.,.) %>%
+  map(lift(bed_jaccard)) %>% 
+  map("jaccard") %>%
+  flatten_dbl() %>%
+  matrix(nrow = 20, ncol = 20)
+```
+
+We also need to generate labels for the table from the file names.
+
+```{r jaccard-names}
+# names are tissue + sample_num
+col_names <- dnase_files %>%
+  str_split('/') %>% map(`[[`, 3) %>%
+  str_split('\\.') %>% map(`[[`, 1) %>%
+  str_split('-') %>% map(`[[`, 1) %>%
+  flatten_chr() %>%
+  str_replace('^f', '') %>%
+  str_c(str_c('-', seq(length(.))))
+
+colnames(res) <- col_names
+rownames(res) <- col_names
+```
+
+Now the Jaccard coefficients can be visualized in heatmap form.
+
+```{r jaccard-heatmap, fig.cap='Heatmap of Jaccard scores', fig.align='center', fig.width=8}
+Heatmap(res, color_space = 'Blues')
+```
+
+Finally we can do some PCA analysis on the Jaccard coefficients to identify clusters of related cell types.
+
+```{r jaccard-PCA, fig.cap='PCA analysis of Jaccard scores', fig.align='center', fig.width=8}
+pca <- broom::tidy(prcomp(res)) %>% as_data_frame()
+
+pca_comps <- filter(pca, PC <= 2) %>%
+  tidyr::spread(PC, value) %>%
+  setNames(c('label','PC1','PC2'))
+
+ggplot(pca_comps, aes(PC1, PC2)) +
+  geom_point(size = 3, color = 'red') +
+  geom_text_repel(aes(label = label))
+```
+
+## Spatial correlations among transcription factor binding sites
+
+This is a more involved analysis to examine spatial correlations of transcription factor binding sites that uses ENCODE data.
+
+```{r read_data}
+library(dplyr)
+library(readr)
+library(tidyr)
+library(stringr)
+library(ggplot2)
+library(broom)
+
+url <- 'http://hgdownload.cse.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeRegTfbsClustered/wgEncodeRegTfbsClusteredWithCellsV3.bed.gz'
+
+col_names <- c('chrom', 'start', 'end', 'tf.name', 'cell.id', 'cell.names')
+tfbs_data <- read_tsv(url, col_names = col_names) %>% tbl_df
+
+# filter on tier 1 cell lines
+tier1 <- c('K562', 'H1-hESC', 'GM12878')
+tfbs_tier1_data <- tfbs_data %>%
+  select(-cell.id) %>%
+  mutate(cell.names = str_split(cell.names, ',')) %>%
+  unnest(cell.names) %>% 
+  rename(cell.name = cell.names) %>%
+  filter(cell.name %in% tier1)
+
+peak_midpoints_raw <- tfbs_tier1_data %>%
+  mutate(peak.midpoint = as.integer(start + round((end - start) / 2))) %>%
+  select(-start, -end)
+
+# select groups with more than 100 observations
+peak_midpoints <- peak_midpoints_raw %>%
+  group_by(chrom, tf.name, cell.name) %>%
+  summarize(count = n()) %>%
+  filter(count > 100) %>%
+  inner_join(peak_midpoints_raw) %>%
+  select(-count) %>%
+  ungroup()
+```
+
+Are TF binding sites randomly distributed on chromosomes? (Lag plots)
+
+```{r tfbs_lag}
+# http://www.r-bloggers.com/predictability-of-stock-returns-using-acf/
+peak_lags <- peak_midpoints %>%
+  group_by(chrom, tf.name, cell.name) %>%
+  arrange(peak.midpoint) %>%
+  mutate(midpoint.lag = peak.midpoint - lag(peak.midpoint)) %>%
+  select(-peak.midpoint) %>%
+  na.omit()
+
+peak_lags  
+```
+
+Let's look a little closer at the structure of the peak_lags.
+
+```{r plot_peak_lags}
+peak_lags %>%
+  ggplot(aes(midpoint.lag, color = cell.name)) +
+  geom_histogram() +
+  facet_wrap(~tf.name) + 
+  scale_y_log10() +
+  xlim(c(0,100000))
+```
+
+Do any factors exhibit non-randomness? We can use the `randtests::runs.test()` to assess whether any of the midpoint distributions have significant levels of non-randomness.
+
+```{r runs_test, message=FALSE}
+library(randtests)
+# this takes ~2 minutes to run
+runs_tests <- peak_lags %>%
+  group_by(chrom, tf.name, cell.name) %>%
+  do(tidy(runs.test(.$midpoint.lag)))
+```
+
+Now let's check the distribution of p-values in the runs tests.
+
+```{r runs_pvalues}
+runs_tests %>%
+  ggplot(aes(p.value)) +
+  geom_histogram(binwidth = .05) +
+  scale_x_log10()
+```
+
+Now let's do some correction of those p-values, converting them to q-values.
+
+```{r runs_qvalues}
+library(qvalue)
+
+runs_tests <- runs_tests %>%
+  ungroup() %>%
+  mutate(q.value = qvalue(p.value)$qvalues)
+
+runs_tests %>%
+  group_by(cell.name, chrom) %>%
+  summarize(signif = sum(q.value < .01)) %>%
+  arrange(-signif)
+```
+
+```{r lag_acf}
+acf_conf <- function(x, conf.level = 0.95, ...) {
+  conf.int <- qnorm((1 + conf.level) / 2) / sqrt(x$n.used)
+  conf.int
+}
+
+lag_acfs <- peak_lags %>%
+  group_by(chrom, tf.name, cell.name) %>%
+  do(acf_result = acf(.$midpoint.lag, plot = FALSE))
+
+tidy_lag_acfs <- lag_acfs %>% tidy(acf_result)
+
+acf_confs <- lag_acfs %>%
+  mutate(conf.level.95 = acf_conf(acf_result),
+         conf.level.99 = acf_conf(acf_result, conf.level = 0.99)) %>%
+  ungroup()
+```
+
+Here we ask whether there are combinations that are highly significant at all acfs?
+
+```{r signif_acfs}
+# set a threshold for the number that can be false
+# XXX could also be a proportion
+min.false <- 2
+min.obs <- 10
+
+tidy_lag_acfs %>% left_join(acf_confs) %>%
+  mutate(signif = (acf > 0 & acf > conf.level.95) | (acf < 0 & acf < -conf.level.95)) %>%
+  select(chrom, tf.name, cell.name, signif) %>%
+  summarize(num.obs = n(),
+            num.true = length(which(signif)),
+            num.false = num.obs - num.true) %>%
+  filter(num.obs > min.obs & num.false <= min.false) %>%
+  ungroup() %>%
+  select(chrom, tf.name, cell.name) %>%
+  unique()
+
+acfs_high_signif <- tidy_lag_acfs %>% left_join(acf_confs) %>%
+  filter(all((acf > 0 & acf > conf.level.95) | (acf < 0 & acf < -conf.level.95))) %>%
+  ungroup() %>%
+  select(chrom, tf.name, cell.name) %>%
+  unique()
+
+signif_data <- acfs_high_signif %>% left_join(tidy_lag_acfs) %>% left_join(acf_confs)
+
+ggplot(signif_data, aes(x = lag, y = acf)) + geom_bar(stat='identity', width = 0.3) +
+  facet_wrap(~tf.name + chrom + cell.name) + theme_bw() +
+  geom_hline(aes(yintercept = conf.level.95), data = signif_data, linetype = 'dashed', color = 'blue') + 
+  geom_hline(aes(yintercept = conf.level.99), data = signif_data, linetype = 'dashed', color = 'red') 
+```

@@ -1,10 +1,11 @@
 Package: valr-demo
-Title: Does not matter.
+Title: Demonstrations of the valr package.
 Version: 0.0.1
 biocViews:
   IRanges,
   GenomicRanges,
-  ComplexHeatmap
+  ComplexHeatmap,
+  qvalue
 Imports:
   valr,
   bookdown,
@@ -14,7 +15,8 @@ Imports:
   bedr,
   RColorBrewer,
   purrr,
-  dplyr
+  dplyr,
+  runstest
 Remotes:
   rstudio/bookdown,
   jayhesselberth/valr
