@@ -2,7 +2,7 @@
 
 `valr` has a variety of functions for reading and manipulating intervals. Many of the functions have names similar to their [BEDtools][1] and [Genometricorr][17] counterparts.
 
-Because files from genome analyses can be large and interval comparisons are computationally intensive, many functions were implemented in `Rcpp` for maximum speed. See the [function benchmarks][#fxn-benchmarks] section for timings of individual functions.
+Because files from genome analyses can be large and interval comparisons are computationally intensive, many functions were implemented in `Rcpp` for maximum speed. See the [function benchmarks](#fxn-benchmarks) section for timings of individual functions.
 
 Several of the methods in `valr` use [non-standard evaluation (NSE)][4] for an expressive syntax. Columns are referred to as naked, unquoted names and can be used in multiple name/value expressions.
 
