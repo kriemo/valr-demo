@@ -547,7 +547,7 @@ group_by(x, chrom) %>% sample_n(1)
 `bed_shuffle` shuffles input intervals. Interval sizes are equal in the input and output.
 
 ```{r shuffle_glyph, echo = FALSE, }
-seed = 092316
+seed <- 092316
 a <- tribble(
   ~chrom, ~start, ~end,
   'chr1',      0,       20,
